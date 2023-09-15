@@ -16,7 +16,7 @@ int main()
 {
 	// set up context
 	EncryptionParameters parms(scheme_type::bfv);
-	std::shared_ptr<SlotRing> slot_ring = p_257_test_parameters();
+	std::shared_ptr<SlotRing> slot_ring = p_127_test_parameters();
 	SlotRing basic_slot_ring = slot_ring->change_exponent(1);
 	parms.set_poly_modulus_degree(slot_ring->N());
 	parms.set_coeff_modulus(CoeffModulus::BFVDefault(slot_ring->N()));
@@ -60,7 +60,7 @@ int main()
 
 	std::cout << "setup context" << std::endl;
 
-	Bootstrapper bootstrapper(context, slot_ring, p_257_test_parameters_digit_extractor(*slot_ring));
+	Bootstrapper bootstrapper(context, slot_ring, p_127_test_parameters_digit_extractor(*slot_ring));
 	bootstrapper.initialize();
 
 	std::cout << "initialized bootstrapper" << std::endl;
