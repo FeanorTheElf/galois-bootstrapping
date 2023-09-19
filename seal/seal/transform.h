@@ -31,7 +31,7 @@ struct std::hash<std::tuple<Args...>> {
 */
 class NegacyclicPowerTable {
 
-	const SlotRing::SubringView& ring;
+	SlotRing::SubringView ring;
 	uint64_t N;
 	poly generator;
 	std::vector<poly> content;
