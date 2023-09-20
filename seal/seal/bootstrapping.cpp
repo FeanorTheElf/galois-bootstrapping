@@ -159,67 +159,6 @@ std::unique_ptr<PolyEvaluator> p_257_test_parameters_digit_extractor(const SlotR
 	return std::make_unique<P257CorrectionPolyEvaluator>(slot_ring, std::move(element), std::move(correction_poly), log2_exponent);
 }
 
-/**
- * Currently unused, as the digit extraction polynomial is never used explicitly, but
- * only via p_xxx_test_parameters_digit_extractor() who uses it in a more involved form.
-*/
-poly compute_digit_extract_poly(size_t p, size_t e) {
-	poly result;
-	result.resize(p + 1);
-	seal::Modulus pe_mod(seal::util::exponentiate_uint(p, e));
-	seal::Modulus pe1_mod(seal::util::exponentiate_uint(p, e + 1));
-	// lagrange-interpolate a polynomial f such that f(x) == (x^p - x)/p mod p
-	// store this in result
-	poly l_poly;
-	for (uint64_t x = 0; x < p; ++x) {
-		uint64_t value = seal::util::sub_uint_mod(seal::util::exponentiate_uint_mod(x, p, pe1_mod), x, pe1_mod) / p;
-		l_poly.clear();
-		l_poly.resize(p + 1);
-		l_poly[0] = 1;
-		uint64_t den = 1;
-		for (uint64_t y = 0; y < p; ++y) {
-			if (y != x) {
-				den = seal::util::multiply_uint_mod(den, seal::util::sub_uint_mod(x, y, pe_mod), pe_mod);
-				// multiply l_poly by (X - y)
-				uint64_t tmp = l_poly[0];
-				uint64_t neg_y = seal::util::negate_uint_mod(y, pe_mod);
-				l_poly[0] = seal::util::multiply_uint_mod(l_poly[0], neg_y, pe_mod);
-				for (size_t i = 1; i <= p; ++i) {
-					uint64_t next = l_poly[i];
-					l_poly[i] = seal::util::add_uint_mod(tmp, seal::util::multiply_uint_mod(l_poly[i], neg_y, pe_mod), pe_mod);
-					tmp = next;
-				}
-			}
-		}
-		for (uint64_t y = 0; y < p; ++y) {
-			assert(y == x || poly_eval(l_poly, y, pe_mod) == 0);
-		}
-		assert(poly_eval(l_poly, x, pe_mod) == den);
-
-		int64_t den_inv = get<0>(eea(den, *pe_mod.data()));
-		if (den_inv < 0) {
-			den_inv += *pe_mod.data();
-		}
-		uint64_t factor = seal::util::multiply_uint_mod(value, den_inv, pe_mod);
-		for (size_t i = 0; i <= p; ++i) {
-			result[i] = seal::util::add_uint_mod(result[i], seal::util::multiply_uint_mod(factor, l_poly[i], pe_mod), pe_mod);
-		}
-	}
-	for (uint64_t x = 0; x < p; ++x) {
-		assert(seal::util::multiply_uint_mod(poly_eval(result, x, pe_mod), p, pe_mod) == seal::util::sub_uint_mod(seal::util::exponentiate_uint_mod(x, p, pe_mod), x, pe_mod));
-	}
-	uint64_t neg_p = seal::util::negate_uint_mod(p, pe_mod);
-	for (size_t i = 0; i <= p; ++i) {
-		result[i] = seal::util::multiply_uint_mod(result[i], neg_p, pe_mod);
-	}
-	result[p] = seal::util::add_uint_mod(result[p], 1, pe_mod);
-	for (uint64_t x = 0; x < p; ++x) {
-		assert(poly_eval(result, x + p, pe_mod) % (p * p) == x);
-		assert(poly_eval(result, x + p * p, pe_mod) % (p * p * p) == x);
-	}
-	return result;
-}
-
 P127PolyEvaluator::P127PolyEvaluator(const SlotRing& slot_ring, poly evaluation_element, poly correction_poly, size_t log2_exponent)
 	: slot_ring(slot_ring), correction_poly(std::move(correction_poly)), log2_exponent(log2_exponent), norm_op(slot_ring, log2_exact(slot_ring.slot_rank()) - log2_exponent)
 {
@@ -235,7 +174,7 @@ P127PolyEvaluator::P127PolyEvaluator(const SlotRing& slot_ring, poly evaluation_
 
 poly P127PolyEvaluator::operator()(const poly& x) const
 {
-	throw std::exception("Unimplemented");
+	throw std::invalid_argument("Unimplemented");
 }
 
 /**
@@ -806,7 +745,7 @@ P257CorrectionPolyEvaluator::P257CorrectionPolyEvaluator(const SlotRing& slot_ri
 
 poly P257CorrectionPolyEvaluator::operator()(const poly& x) const
 {
-	throw std::exception("Unimplemented");
+	throw std::invalid_argument("Unimplemented");
 }
 
 void P257CorrectionPolyEvaluator::apply_ciphertext(const seal::Ciphertext& in, const seal::SEALContext& context, const seal::Evaluator& eval, const seal::GaloisKeys& gk, const seal::RelinKeys& rk, seal::Ciphertext& destination) const
