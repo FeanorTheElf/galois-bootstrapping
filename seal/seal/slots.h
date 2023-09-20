@@ -16,46 +16,38 @@ extern size_t kswitch_counter;
  void log_relin();
  void log_galois();
 
+inline uint64_t log2_ceil(uint64_t x) {
+	if (x == 0) {
+		return 0;
+	}
+	unsigned long result = 0;
+	while (x != 0) {
+		x = x >> 1;
+		result += 1;
+	}
+	return result - 1;
+};
+
 inline uint64_t log2_exact(uint64_t x) {
-	unsigned long result;
-	if (_BitScanForward64(&result, x)) {
-		if (((uint64_t)1 << result) == x) {
-			return result;
-		}
-		else {
-			throw std::invalid_argument("Not a power of 2");
-		}
+	unsigned long result = log2_ceil(x);
+	if (((uint64_t)1 << result) == x) {
+		return result;
 	}
 	else {
 		throw std::invalid_argument("Not a power of 2");
 	}
 };
 
-inline uint64_t log2_ceil(uint64_t x) {
-	unsigned long result;
-	if (_BitScanReverse64(&result, x)) {
-		if (((uint64_t)1 << result) == x) {
-			return result;
-		}
-		else {
-			assert(((uint64_t)1 << (result + 1)) > x);
-			assert(((uint64_t)1 << result) < x);
-			return result + 1;
-		}
-	}
-	else {
-		return 0;
-	}
-};
-
 inline uint64_t highest_dividing_power2(uint64_t x) {
-	unsigned long result;
-	if (_BitScanForward64(&result, x)) {
-		return result;
-	}
-	else {
+	if (x == 0) {
 		return std::numeric_limits<uint64_t>::digits;
 	}
+	unsigned long result = 0;
+	while ((x & 1) == 0) {
+		result += 1;
+		x = x >> 1;
+	}
+	return result;
 };
 
 void test_g_automorphisms();

@@ -8,13 +8,12 @@
 namespace karatsuba {
 
 	inline size_t leading_zeros(uint64_t mask) {
-		unsigned long result;
-		if (_BitScanReverse64(&result, mask)) {
-			return 63 - result;
+		unsigned long result = 64;
+		while (mask != 0) {
+			mask = mask >> 1;
+			result -= 1;
 		}
-		else {
-			return 64;
-		}
+		return result;
 	}
 
 	template<typename T, typename F>
